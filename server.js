@@ -120,7 +120,8 @@ async function callModel(dossiers, budgetMs) {
   if (Date.now() < blockedUntil) throw new Error('rate-limit cooldown');
   const model = models[modelIdx % models.length];
   const url = base.replace(/\/$/, '') + '/chat/completions';
-  const mk = json => ({ model, temperature: 0, ...(json ? { response_format: { type: 'json_object' } } : {}),
+  let extra = {}; try { extra = JSON.parse(process.env.LLM_EXTRA || '{}'); } catch (_) {}
+  const mk = json => ({ ...extra, model, temperature: 0, ...(json ? { response_format: { type: 'json_object' } } : {}),
     messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: JSON.stringify({ dossiers }) }] });
   for (const json of [true, false]) {
     const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), Math.max(3000, Math.min(LLM_TIMEOUT_MS, budgetMs)));
