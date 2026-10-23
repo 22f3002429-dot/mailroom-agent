@@ -7,7 +7,7 @@ const PROFILE = 'ga5-mailroom-action-gate/v2';
 const ACTIONS = ['create_draft', 'update_internal_record', 'send_approved_notice', 'request_confirmation', 'quarantine_item', 'no_action'];
 const DATA_FILE = process.env.DATA_FILE || './state.json';
 const MAX_BODY = 4 * 1024 * 1024;
-const BATCH = 5, CONCURRENCY = 5, LLM_TIMEOUT_MS = 35000, DEADLINE_MS = 48000;
+const BATCH = 5, CONCURRENCY = 5, LLM_TIMEOUT_MS = 35000, DEADLINE_MS = 38000;
 let blockedUntil = 0, modelIdx = 0;
 const diag = { lastError: null, modelCalls: 0, modelOk: 0, fallbacks: 0 };
 
@@ -135,7 +135,7 @@ async function callModel(dossiers, budgetMs) {
       let c = j.choices[0].message.content || '';
       c = c.replace(/^```(?:json)?/i, '').replace(/```\s*$/, '').trim();
       const out = JSON.parse(c).results; diag.modelOk++; return out || [];
-    } catch (e) { diag.lastError = String(e.message || e).slice(0, 300); console.error('model error', diag.lastError); if (!json) throw e; }
+    } catch (e) { diag.lastError = String(e.message || e).slice(0, 300); console.error('model error', diag.lastError); throw e; }
     finally { clearTimeout(t); }
   }
   return [];
